@@ -1,0 +1,95 @@
+output_direct_score_template = \
+"""**[Task]**
+
+Given the [User Input] and the corresponding multiple answers in [Answers] (which are in random order), please score these answers on a scale of 1-10 (the higher the score, the better) according to the following principles:
+
+(1) Based on the [User Input] and all the answers in [Answers], propose evaluation criteria that can assess the quality of the given answers. Ensure that under these criteria, the first answer listed receives a score of 5.
+(2) Explain the scoring principle for each score value sequentially.
+(3) Score all the answers in [Answers] based on the established evaluation criteria. You must use the first listed answer as a 5-point reference sample and provide a reason for each score.
+(4) Refer to the [Output Format] for the output structure.
+
+Note: You must ensure that the scores for the [Answers] are well-differentiated.
+
+Special Attention: You must ensure that the first answer listed receives a score of 5 under your scoring standard. Use this first answer as a baseline (referred to as "Baseline"). For subsequent answers, a score greater than 5 must mean it is better than the first answer, and a score less than 5 must mean it is worse than the first answer.
+
+**[User Input]**
+{user_input}
+
+**[Answers]**
+{answers}
+
+**[Output Format]**
+Output in JSON format, with every answer giving one score in 1-10. The answer is identified by 'id'. 
+```json
+{{
+    "think": "analyze the user's input, come up with some criterion", 
+    "standard": [
+        {{
+            "score": 10, 
+            "standard": "standard of score 10"
+        }}, 
+        ...
+        {{
+            "score": 5, 
+            "standard": "standard of score 5"
+        }}, 
+        ... 
+        {{
+            "score": 1, 
+            "standard": "standard of score 1"
+        }}, 
+    ], 
+    "result": [
+        {{
+            "id": ..., 
+            "reason": "compare with the first answer (Baseline), and then judge the quality of this answer", 
+            "score": evaluated socre
+        }}, 
+        ...
+        {{
+            "id": ..., 
+            "reason": "compare with the first answer (Baseline), and then judge the quality of this answer", 
+            "score": evaluated score
+        }}
+    ]  
+}}
+```
+"""
+
+process_direct_score_template = \
+"""**[Task]**
+
+Please evaluate the cognitive flow provided in the [Reasoning Flow] based on the three core criteria listed below. You need to score each criterion independently on a scale of 1-10 (the higher the score, the better) and provide a reason for each score.
+
+Evaluation Criteria:
+- **Coherence**: Is it logically sound and free of internal contradictions?
+- **Interpretability**: Does it clearly explain the social dynamics or core mechanisms involved?
+- **Predictability**: Does it offer reasonable insight into the future evolution of the social dynamics?
+
+Please strictly follow the JSON format required in the [Output Format].
+
+**[Reasoning Flow]**
+{reasoning_flow}
+
+**[Output Format]**
+Please output in JSON format. The JSON structure should include your thought process, the independent scores, and reasons for each criterion.
+```json
+{{
+    "think": "evaluation process",
+    "evaluation_result": {{
+        "coherence": {{
+            "reason": "Explain your reasoning", 
+            "score": evaluated_score
+        }},
+        "interpretability": {{
+            "reason": "Explain your reasoning", 
+            "score": evaluated_score
+        }},
+        "predictability": {{
+            "reason": "Explain your reasoning", 
+            "score": evaluated_score
+        }}
+    }}
+}}
+```
+"""

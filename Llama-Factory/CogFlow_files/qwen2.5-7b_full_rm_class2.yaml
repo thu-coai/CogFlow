@@ -1,0 +1,50 @@
+# 记得修改/data/chenzheyu/CogGraph/SFT/LLaMA-Factory/src/llamafactory/model/loader.py: Line 154
+
+### model
+model_name_or_path: /data/public_checkpoints/huggingface_models/Qwen2.5-7B-Instruct
+trust_remote_code: false
+max_length: 5120
+
+### method
+stage: rm_class
+do_train: true
+finetuning_type: full
+deepspeed: CogFlow_files/ds_z3_config.json 
+
+### dataset
+dataset: cog_flow_rm_train
+template: qwen # modify for llama
+cutoff_len: 5120
+overwrite_cache: true
+preprocessing_num_workers: 16
+dataloader_num_workers: 4
+# tokenized_path: saves/Qwen2.5-7b/full/sft_4_en_ep2/tokenized
+
+### output
+output_dir: saves/Qwen2.5-7b/full/cog_flow_rm_10_class2
+logging_steps: 2
+save_steps: 50
+plot_loss: true
+overwrite_output_dir: true
+save_only_model: false
+
+### train
+per_device_train_batch_size: 24
+gradient_accumulation_steps: 1
+learning_rate: 5.0e-6
+num_train_epochs: 3.0
+lr_scheduler_type: cosine
+warmup_ratio: 0.1
+bf16: true
+ddp_timeout: 180000000
+resume_from_checkpoint: null
+
+report_to: tensorboard
+run_name: CogFlow_RM_qwen2.5-7b-instruct_class2
+
+### eval
+eval_dataset: cog_flow_rm_eval
+# val_size: 0.1
+per_device_eval_batch_size: 24
+eval_strategy: steps
+eval_steps: 25
