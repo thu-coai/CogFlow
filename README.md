@@ -121,7 +121,9 @@ This step teaches the base model the fundamental capability of cognitive reasoni
     cd Llama-Factory/CogFlow_files
     bash prepare_data_sft.sh
     ```
-- **Prepare Config**: Modify the SFT configuration file (`Llama-Factory/CogFlow_files/qwen2.5-7b_full_sft_cogflow.yaml`) and update `model_name_or_path` to your base model's path.
+- **Prepare Config**:
+  - Modify the SFT configuration file, `Llama-Factory/CogFlow_files/qwen2.5-7b_full_sft_cogflow.yaml` for `Qwen-2.5-7B-Instruct` base model and `Llama-Factory/CogFlow_files/llama3.1-8b_full_sft_cogflow.yaml` for `Llama-3.1-8B-Instruct` base model.
+  - update the corresponding `model_name_or_path` to your base models' path.
 - **Run SFT Training**: Execute the training command:
     ```bash
     cd Llama-Factory
