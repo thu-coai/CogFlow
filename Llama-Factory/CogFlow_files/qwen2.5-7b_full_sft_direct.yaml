@@ -11,7 +11,7 @@ deepspeed: czy_files/ds_z3_config.json
 
 ### dataset
 dataset: cog_flow_direct
-template: qwen # modify for llama
+template: qwen
 cutoff_len: 8192
 overwrite_cache: true
 preprocessing_num_workers: 16
@@ -38,7 +38,7 @@ ddp_timeout: 180000000
 resume_from_checkpoint: false
 
 report_to: tensorboard
-run_name: CogFlow_SFT_qwen2.5-7b-instruct_noreason
+run_name: CogFlow_SFT_qwen2.5-7b-instruct_direct
 
 ### eval
 val_size: 0.1

@@ -36,7 +36,8 @@
     "major_category": "Family",
     "sub_category": "Extended Family Relations",
     "difficulty": "easy",
-    "rationality": "yes"
+    "rationality": "yes",
+    "split": "test"
   },
   {
     "input": "At TechStar Office on Tuesday afternoon, Sarah and Eric work on a project deadline. Tom sees Sarah quietly ask Eric to cover her shift reporting while she leaves early. Later, at the cafe across the street, Tom spots Sarah meeting a man he doesn't recognize. Sarah said she had a dentist appointment. Eric finishes Sarah's report without complaint. At 7 PM, Tom walks past Sarah's empty desk where her phone buzzes repeatedly. Tom sees Eric pick up the phone, pause, then put it back with a frown instead of answering. Later, Tom finds an opened envelope addressed to Sarah on the shared printer with flight details to another city this weekend. Sarah enters and calmly explains about personal errands for her aunt while taking the envelope. Throughout this, Eric watches with tight lips but says nothing.\nWhat does Eric decide to do next?\n**[Output Format]**\n\nFormat the answer in JSON with detailed reasoning. Example structure:  \n\n```json\n{\n  \"decision\": \"[Eric's action]\",\n  \"reasoning\": {\n    \"observation_1\": \"[key detail from the story]\",\n    \"observation_2\": \"[another key detail]\", \n    \"conclusion\": \"[inference from observations]\"\n  }\n}\n```",
@@ -90,6 +91,7 @@
     "major_category": "Professional",
     "sub_category": "Professional Relationships",
     "difficulty": "medium",
-    "rationality": "yes"
+    "rationality": "yes",
+    "split": "test"
   }
 ]

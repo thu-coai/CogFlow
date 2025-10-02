@@ -13,7 +13,7 @@ deepspeed: CogFlow_files/ds_z3_config.json
 
 ### dataset
 dataset: cog_flow_rm_train
-template: qwen # modify for llama
+template: qwen
 cutoff_len: 5120
 overwrite_cache: true
 preprocessing_num_workers: 16

@@ -1,20 +1,20 @@
 set -x
 
+####################################
+# You can change these environment variables to match your environment
+export TMPDIR="/path/to/tmp" # absolute path to tmp file
+MODEL_PATH=/path/to/sft_model # path to SFT model
+REWARD_MODEL_PATH=/path/to/reward/model # path to preference reward model
+MODEL_BRIEF_NAME=model_name # model name, used in log
+####################################
+
 export VLLM_ATTENTION_BACKEND=XFORMERS
 
-export TMPDIR="/path/to/tmp" # absolute path to tmp file
-
-TRAIN_DATASET_FILES=data_cogflow/cogflow_train.parquet
-VAL_DATASET_FILES=data_cogflow/cogflow_test.parquet
-
-REWARD_FUNCTION_FILE=custom_reward_distillr1.py
-
-MODEL_PATH=/path/to/llama_sft_cogflow # path to SFT model
-REWARD_MODEL_PATH=/path/to/reward/model # path to preference reward model
-
+TRAIN_DATASET_FILES=data_cogflow/direct_train.parquet
+VAL_DATASET_FILES=data_cogflow/direct_test.parquet
+REWARD_FUNCTION_FILE=custom_reward_direct.py
 PROJECT_NAME=verl_grpo_cog_flow
-RUN_NAME=llama31_8b_rm_cogflow_distillr1
-
+RUN_NAME=${MODEL_BRIEF_NAME}_rm_cogflow_direct
 SRC_USE_CUSTOM_REWARD="[cog_flow]"
 
 # You can tune these hyperparameters for better performance

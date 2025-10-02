@@ -29,10 +29,10 @@ logger.addHandler(file_handler)
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_path", type=str, default="../../dataset/train.json")
-    parser.add_argument("--save_path", type=str, required=True)
+    parser.add_argument("--save_path_train", type=str, required=True)
+    parser.add_argument("--save_path_eval", type=str, required=True)
     parser.add_argument("--data_source", type=str, default="cog_flow")
-    parser.add_argument("--start_num", type=int, required=True, help="include this number")
-    parser.add_argument("--end_num", type=int, required=True, help="include this number, if negative, count from the end")
+    parser.add_argument("--split_ratio", type=str, default="8:1")
     args = parser.parse_args()
 
     with open(args.dataset_path, "r") as f:
@@ -42,11 +42,9 @@ def main():
         return
     
     output_data = []
-    args.end_num = (args.end_num+len(data)) % len(data)
-    args.start_num = (args.start_num+len(data)) % len(data)
-    for i in range(args.start_num, args.end_num+1):
-        if i >= len(data):
-            break
+    for i in range(len(data)):
+        if data[i]['split'] != 'rl':
+            continue
         reference_responses = [item['reasoning_and_response'] for item in data[i]["reference_responses_from_diverse_source"] if item['source'] != 'r1']
         candidate_response = ""
         user_input = data[i]['input']
@@ -61,9 +59,17 @@ def main():
             "reference_responses": reference_responses,
             "data_source": args.data_source,
         })
-    os.makedirs(os.path.dirname(args.save_path), exist_ok=True)
-    with open(args.save_path, "w") as f:
-        json.dump(output_data, f, ensure_ascii=False, indent=2)
+    
+    split_ratio = args.split_ratio.split(":")
+    train_size = int(len(output_data) * float(split_ratio[0]) / (float(split_ratio[0]) + float(split_ratio[1])))
+    train_data = output_data[:train_size]
+    eval_data = output_data[train_size:]
+    os.makedirs(os.path.dirname(args.save_path_train), exist_ok=True)
+    with open(args.save_path_train, "w") as f:
+        json.dump(train_data, f, ensure_ascii=False, indent=2)
+    os.makedirs(os.path.dirname(args.save_path_eval), exist_ok=True)
+    with open(args.save_path_eval, "w") as f:
+        json.dump(eval_data, f, ensure_ascii=False, indent=2)
 
 if __name__ == "__main__":
     main()

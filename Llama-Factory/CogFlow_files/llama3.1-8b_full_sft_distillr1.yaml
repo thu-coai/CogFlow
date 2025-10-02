@@ -1,7 +1,7 @@
 ### model
-model_name_or_path: /data/public_checkpoints/huggingface_models/Qwen2.5-7B-Instruct
+model_name_or_path: /data/public_checkpoints/huggingface_models/Llama3.1-8B-Instruct
 trust_remote_code: true
-add_special_tokens: <think>,</think>,<Observation>,</Observation>,<Attribution>,</Attribution>,<Motivation>,</Motivation>,<Regulation>,</Regulation>,<Efficacy>,</Efficacy>,<Behavior>,</Behavior>
+add_special_tokens: <think>,</think>
 max_length: 8192
 
 ### method
@@ -11,15 +11,15 @@ finetuning_type: full
 deepspeed: CogFlow_files/ds_z3_config.json 
 
 ### dataset
-dataset: cog_flow
-template: qwen
+dataset: cog_flow_distillr1
+template: llama3
 cutoff_len: 8192
 overwrite_cache: true
 preprocessing_num_workers: 16
 dataloader_num_workers: 4
 
 ### output
-output_dir: saves/Qwen2.5-7b/full/sft
+output_dir: saves/Llama3.1-8b/full/sft_distillr1
 logging_steps: 10
 save_strategy: epoch
 plot_loss: true
@@ -38,7 +38,7 @@ ddp_timeout: 180000000
 resume_from_checkpoint: false
 
 report_to: tensorboard
-run_name: CogFlow_SFT_qwen2.5-7b-instruct
+run_name: CogFlow_SFT_llama3.1-8b-instruct_distillr1
 
 ### eval
 val_size: 0.1

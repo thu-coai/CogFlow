@@ -32,6 +32,7 @@ parser.add_argument("--input_folders", type=str, required=True, help="Example: r
 parser.add_argument("--output_folder", type=str, required=True)
 parser.add_argument("--reference_api", type=str, default="ds-r1")
 parser.add_argument("--skip_apis", type=str, default="ds-v3,gpt")
+parser.add_argument("--sft_rl_test_ratio", type=str, default="2:6:1")
 args = parser.parse_args()
 args.input_folders = args.input_folders.split(",")
 args.skip_apis = args.skip_apis.split(",")
@@ -213,13 +214,22 @@ def main():
     logger.info(f"total data: {len(all_data)}")
     
     # Split and Output the dataset
-    with open(os.path.join(args.output_folder, "generated_data.json"), "w") as f:
+    with open(os.path.join(args.output_folder, "generated_data_not_splitted.json"), "w") as f:
         json.dump(all_data, f, indent=2, ensure_ascii=False)
     logger.info(f"output to {os.path.join(args.output_folder, "generated_data.json")}: {len(all_data)}")
     
-    train_split_pt = int(len(all_data) * 0.9)
-    train_data = all_data[:train_split_pt]
-    test_data = all_data[train_split_pt:]
+    split_ratio = args.sft_rl_test_ratio.split(":")
+    train_sft_split_size = int(len(all_data) * float(split_ratio[0]) / sum([float(ratio) for ratio in split_ratio]))
+    train_rl_split_size = int(len(all_data) * float(split_ratio[1]) / sum([float(ratio) for ratio in split_ratio]))
+    train_sft_data = all_data[:train_sft_split_size]
+    train_rl_data = all_data[train_sft_split_size:train_sft_split_size+train_rl_split_size]
+    test_data = all_data[train_sft_split_size+train_rl_split_size:]
+    
+    for dataset, data in zip(["sft", "rl", "test"], [train_sft_data, train_rl_data, test_data]):
+        for datum in data:
+            datum['split'] = dataset
+    
+    train_data = train_sft_data + train_rl_data
     
     with open(os.path.join(args.output_folder, "train.json"), "w") as f:
         json.dump(train_data, f, indent=2, ensure_ascii=False)

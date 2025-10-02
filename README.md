@@ -1,302 +1,224 @@
-# CogFlow
+# Think Socially via Cognitive Reasoning
 
-## Abstract
+[![arXiv](https://img.shields.io/badge/arXiv-2509.22546-b31b1b.svg)](https://arxiv.org/abs/2509.22546v1)
 
-LLMs trained for logical reasoning excel at step-by-step deduction to reach verifiable answers. However, this paradigm is ill-suited for navigating social situations, which induce an interpretive process of analyzing ambiguous cues that rarely yield a definitive outcome. To bridge this gap, we introduce Cognitive Reasoning, a paradigm modeled on human social cognition. It formulates the interpretive process into a structured cognitive flow of interconnected cognitive units (e.g., *observation* or *attribution*), which combine adaptively to enable effective social thinking and responses. We then propose CogFlow, a complete framework that instills this capability in LLMs. CogFlow first curates a dataset of cognitive flows by simulating the associative and progressive nature of human thought via tree-structured planning. After instilling the basic cognitive reasoning capability via supervised fine-tuning, CogFlow adopts reinforcement learning to enable the model to improve itself via trial and error, guided by a multi-objective reward that optimizes both cognitive flow and response quality. Extensive experiments show that CogFlow effectively enhances the social cognitive capabilities of LLMs, and even humans, leading to more effective social decision-making. 
+This repository contains the official implementation for the paper **"Think Socially via Cognitive Reasoning"**. We introduce **Cognitive Reasoning**, a new paradigm modeled on human social cognition, and **CogFlow**, a framework to instill this capability in LLMs.
 
-## Dataset Preparation
+CogFlow enables models to navigate complex social situations by generating a structured "cognitive flow" of interconnected cognitive units (e.g., *observation*, *attribution*). This approach moves beyond rigid logical deduction, which is often ill-suited for the ambiguous and interpretive nature of social interactions.
 
-You should prepare the dataset first. It can be done in two ways: (1) Download our dataset, or (2) run cognitive flow simulation to generate it. 
+![CogFlow Framework Overview](https://storage.googleapis.com/static.deepmind.com/prompt_gallery/CogFlow_Framework_Overview.png)
+> **Figure:** The CogFlow framework, from data collection via simulation to model optimization with SFT and RL.
 
-### Download our dataset
-You can directly download our dataset from (release later), and place them at `dataset/train.json`, `dataset/text.json`, then you can run the following steps of SFT， RL and test.
+## 📜 Table of Contents
+- [✨ Features](#-features)
+- [🚀 Getting Started](#-getting-started)
+  - [Environment Setup](#environment-setup)
+- [💾 Dataset Preparation](#-dataset-preparation)
+  - [Option 1: Download Our Dataset (Recommended)](#option-1-download-our-dataset-recommended)
+  - [Option 2: Generate Dataset via Cognitive Flow Simulation](#option-2-generate-dataset-via-cognitive-flow-simulation)
+- [⚙️ Training Pipeline](#️-training-pipeline)
+  - [Step 1: Supervised Fine-Tuning (SFT)](#step-1-supervised-fine-tuning-sft)
+  - [Step 2: Train Preference Reward Model](#step-2-train-comparative-preference-reward-model)
+  - [Step 3: Reinforcement Learning (RL)](#step-3-reinforcement-learning-rl)
+- [📊 Analysis & Evaluation](#-analysis--evaluation)
+  - [Automatic Evaluation](#automatic-evaluation)
+  - [Attention Flow Visualization](#attention-flow-visualization)
+- [🎓 Citation](#-citation)
+- [🙏 Acknowledgements](#-acknowledgements)
 
-### Cognitive flow simulation
+## ✨ Features
 
-Related code are in `data_generation`
+* **Cognitive Reasoning Paradigm**: A structured approach that allows LLMs to interpret and respond to social situations more effectively.
+* **Cognitive Flow Simulation**: A novel data generation process using tree-structured planning to simulate the associative nature of human thought.
+* **SFT + RL Framework**: A complete training pipeline that first instills foundational skills via Supervised Fine-Tuning (SFT) and then refines them using multi-objective Reinforcement Learning (RL).
+* **Analysis Tools**: Includes scripts for automated evaluation and visualizing the model's internal attention mechanisms to understand the cognitive flow.
 
-#### Environment Installation
+## 🚀 Getting Started
 
-```bash
-conda create -n cogflow_data python=3.11
-conda activate cogflow_data
-pip install openai==1.109.1 zhipuai==2.1.5.20241204
-pip install numpy==2.2.0
-pip install filelock==3.16.1
+```
+git clone https://github.com/thu-coai/CogFlow
+cd CogFlow
 ```
 
-#### Data Generation
+### Environment Setup
 
-##### Step 1: Prepare the dataset
+This project requires three separate Conda environments due to differing dependencies for data generation, SFT, and RL.
 
-Replace the placeholder file at `data_generation/dataset/reddit_raw.json` with your complete dataset. The dataset must be a JSON file containing a list of dictionaries, where each dictionary follows this structure:
+1.  **For Data Generation (`cogflow_data`)**
+    ```bash
+    conda create -n cogflow_data python=3.11
+    conda activate cogflow_data
+    pip install openai==1.109.1 zhipuai==2.1.5.20241204 numpy==2.2.0 filelock==3.16.1
+    ```
+2.  **For SFT & Reward Model (`cogflow_sft`)**
+    ```bash
+    conda create -n cogflow_sft python=3.11
+    conda activate cogflow_sft
+    # We have only tested on these versions; others may not work as expected.
+    pip install transformers==4.50.0 torch==2.6.0 accelerate==1.5.2 tensorboard==2.19.0 deepspeed==0.16.5
+    cd Llama-Factory
+    pip install -e ".[torch,metrics]"
+    pip install openai==1.109.1
+    cd ..
+    ```
+3.  **For Reinforcement Learning (`cogflow_rl`)**
+    ```bash
+    conda create -n cogflow_rl python=3.10
+    conda activate cogflow_rl
+    pip install transformers==4.54.0 accelerate==1.9.0 torch==2.6.0 deepspeed==0.17.2 torchdata==0.11.0 vllm==0.8.3 ray==2.43.0 tensorboard==2.20.0
+    # Download the correct flash-attention wheel from [https://github.com/Dao-AILab/flash-attention/releases/tag/v2.7.4.post1](https://github.com/Dao-AILab/flash-attention/releases/tag/v2.7.4.post1)
+    pip install path/to/flash_attn-xxx.whl
+    cd veRL
+    pip install -e .
+    cd ..
+    ```
 
-- `Post Text` (str): The main text of the post.
-- `Comments` (list): A list of comments associated with the post.
-- `Subreddit` (str, Optional): The subreddit where the post originated. This field is used to balance the data sources.
+## 💾 Dataset Preparation
 
-##### Step 2: Prepare the API keys
+You can either download our pre-generated dataset or run the cognitive flow simulation to create your own.
 
-You need to use your own API key and choose the target platform.
+### Option 1: Download Our Dataset (Recommended)
 
-1. Set API Credentials: Modify the arguments for the `custom_client` object within the `data_generation/api_config.py` file to add your API key.
-2. Select Platform: While other platforms are supported, you must specify your choice by changing the `platform` variable in `data_generation/run_all.py`. However, we recommend using the default platform `custom`. 
-3. Verify Model Name: Important: Based on your chosen platform, you must also verify and update the corresponding model name in `data_generation/api_config.py`
+You can directly download our dataset from [Huggingface](https://huggingface.co/datasets/thu-coai/CogFlow) and place the files at `dataset/train.json` and `dataset/test.json`. You can then proceed directly to the [Training Pipeline](#️-training-pipeline).
 
-##### Step 3: Run the script
+### Option 2: Generate Dataset via Cognitive Flow Simulation
 
-Navigate to the `data_generation` directory and execute the script.
+The code for simulation is located in the `data_generation` directory.
+
+#### Step 1: Prepare Raw Data
+
+Place your raw data file at `data_generation/dataset/reddit_raw.json`. This should be a JSON file containing a list of dictionaries, each with `Post Text` and `Comments` keys.
+
+#### Step 2: Configure API Keys
+
+You need an API key from a supported LLM provider to generate the data.
+
+1.  **Set API Credentials**: Add your API key in `data_generation/api_config.py` by modifying the `custom_client` arguments.
+2.  **Select Platform**: Set the `platform` variable in `data_generation/run_all.py`. We recommend using the default (`custom`).
+3.  **Verify Model Name**: Ensure the model name in `data_generation/api_config.py` matches your chosen platform.
+
+#### Step 3: Run Simulation
+
+Navigate to the `data_generation` directory and run the script. This will generate the complete dataset and split it into training and testing sets.
+
 ```bash
 cd data_generation
 bash generate_and_collect.sh
 ```
 
-The full data of every social situations will be saved in the subfolders within `data_generation/result/CogFlow_ds-r1_6_added`, and the final dataset will be saved in `dataset/generated_data.json`. Our script will also automatically split the dataset into training and testing sets, with the training set saved in `dataset/train.json` and the testing set saved in `dataset/test.json`, with a 90% to 10% split ratio.
+The final datasets will be saved as `dataset/train.json` and `dataset/test.json`.
 
-## CogFlow SFT
-The code are in `Llama-Factory`. 
+## ⚙️ Training Pipeline
 
-More details of this framework can be found in https://llamafactory.readthedocs.io/en/latest/ or https://github.com/hiyouga/LLaMA-Factory
+The training process uses **Llama-Factory** for SFT and Reward Model training, and **veRL** for Reinforcement Learning. In our practice, we use `Qwen-2.5-7B-Instruct` and `Llama-3.1-8B-Instruct` as our base models.
 
-### Environment Installation
+### Step 1: Supervised Fine-Tuning (SFT)
 
-```bash
-conda create -n cogflow_sft python=3.11
-conda activate cogflow_sft
-pip install transformers==4.50.0 torch==2.6.0 accelerate==1.5.2 tensorboard==2.19.0 deepspeed==0.16.5 # we only tested on this version, other versions are not guaranteed to work
-pip install -e ".[torch,metrics]"
-pip install openai==1.109.1
-```
+This step teaches the base model the fundamental capability of cognitive reasoning. 
 
-### Prepare Dataset
+- **Preprocess Training Data**: Run the following script to preprocess the training data in `dataset/train.json`. It will convert and register the dataset to `Llama-Factory/data`. 
+    ```bash
+    cd Llama-Factory/CogFlow_files
+    bash prepare_data_sft.sh
+    ```
+- **Prepare Config**: Modify the SFT configuration file (`Llama-Factory/CogFlow_files/qwen2.5-7b_full_sft_cogflow.yaml`) and update `model_name_or_path` to your base model's path.
+- **Run SFT Training**: Execute the training command:
+    ```bash
+    cd Llama-Factory
+    llamafactory-cli train CogFlow_files/qwen2.5-7b_full_sft_cogflow.yaml
+    ```
 
-Make sure the train dataset is stored in the `dataset/train.json`. 
+### Step 2: Train Comparative Preference Reward Model
 
-1. Prepare the api key: api key are needed for reward model data generation. You should set it in `Llama-Factory/CogFlow_files/prompt_utils/api_config.py`.
-2. run the script. Note: if you generate the dataset by yourself, you should set `START_NUM` and `END_NUM` based on your planning of the dataset. 
-```bash
-cd Llama-Factory/CogFlow_files
-bash prepare_all_data.sh # this will prepare the cogflow SFT, distilled-r1 SFT,  direct(no reasoning) STF, and reward model tuning data at the same time
-```
+The reward model learns to predict human preferences, guiding the RL process.
 
-### SFT
+- **Prepare Training Data**: You can prepare it in two ways: 
+    - Download Our Dataset (Recommended): downloading our preprocessed reward model data from [Huggingface](https://huggingface.co/datasets/thu-coai/CogFlow) and place it in the `dataset` folder, with names `rm_train.json`, `rm_eval.json`, and `rm_test.json`. Then, run the following script to register the dataset to `Llama-Factory/data`.
+        ```bash
+        cd Llama-Factory/CogFlow_files
+        bash prepare_data_rm_offtheshelf.sh
+        ```
+    - Generate Reward Model Data: Construct reward model data from the `dataset/train.json`. Before running, please configure the API key in `Llama-Factory/CogFlow_files/prompt_utils/api_config.py` (the same procedure in [Step 2](#step-2-prepare-api-keys)). Then, run the following script to register the dataset to `Llama-Factory/data`.: 
+        ```bash
+        cd Llama-Factory/CogFlow_files
+        bash prepare_data_rm.sh
+        ```
+- **Prepare Config**: Use `Llama-Factory/CogFlow_files/qwen2.5-7b_full_rm_class2.yaml` as a template and update `model_name_or_path`.
+- **Run RM Training**:
+    ```bash
+    cd Llama-Factory
+    llamafactory-cli train CogFlow_files/qwen2.5-7b_full_rm_class2.yaml
+    ```
 
-Supervised fine-tuning (SFT) can be performed on base models, such as `Qwen-2.5-7B-Instruct`, using the standard Llama-Factory SFT method. This process is also used to train both the Distilled-R1 and Direct models, though they utilize different added tokens and reasoning processes.
+### Step 3: Reinforcement Learning (RL)
 
-1. Configure SFT: Prepare an SFT configuration file. You can use `Llama-Factory/CogFlow_files/qwen2.5-7b_full_sft_cogflow.yaml` as a template. You SHOULD change the `model_name_or_path` to the real path. 
-2. Run SFT: Execute the SFT command using the configuration file: 
-```bash
-cd Llama-Factory
-llamafactory-cli train CogFlow_files/qwen2.5-7b_full_sft_cogflow.yaml
-```
+RL optimizes the SFT model's ability to generate high-quality and efficient cognitive flows.
 
-### Preference Reward Model
+- **Prepare RL Data**: Ensure `dataset/train.json` is in the root `dataset` folder. Run the preprocessing script to prepare the data for veRL.
+    ```bash
+    cd veRL/cogflow_utils
+    bash prepare_all_data.sh
+    ```
+- **Configure Training Script**: In `veRL/cogflow_utils/llama31_8b_rm_cogflow_full.sh`, set the paths for `TMPDIR`, `MODEL_PATH` (your SFT model), and `REWARD_MODEL_PATH`. Also, set `TOKENIZER_MODEL` in `veRL/cogflow_utils/custom_reward_full.py` (the tokenizer of your SFT model). 
+    - Scripts with suffixs `_direct` or `_distillr1` is used to training the ablations `Direct-GRPO` and `Distilled-R1`.
 
-For preference reward modeling, we implemented a method called `rm_class`, which attaches a classification head to the base model. This approach is designed for use in veRL and creates a `PreTrainedModelForTokenClassification`.
+- **Run RL Training**, Checkpoints will be saved in the `checkpoints` directory.:
+    ```bash
+    cd veRL/cogflow_utils
+    bash rl_cogflow_full.sh
+    ```
+- **Convert Checkpoint**: After training, convert the RL checkpoint into a standard checkpoint. Set the SFT model path and choose a checkpoint in `converter_full.sh`, then run the following script. The final model will be saved in the checkpoint's `model` subdirectory.
+    ```bash
+    bash converter_full.sh
+    ``` 
 
-You can perform RM training from base models like this:
-1. prepare the RM config file (example: `Llama-Factory/CogFlow_files/qwen2.5-7b_full_rm_class2.yaml` ). You SHOULD change the `model_name_or_path` to the real path. 
-2. Run RM tuning: Execute the RM tuning command using the configuration file: 
-```bash
-cd Llama-Factory
-llamafactory-cli train CogFlow_files/qwen2.5-7b_full_rm_class2.yaml
-```
+## 📊 Analysis & Evaluation
 
-## CogFlow RL
-The code are in `veRL`.
+### Automatic Evaluation
 
-### Environment Installation
+The code in the `test` directory is used for automated evaluation.
 
-First, locate the correct version of flash-attention from the official repository: https://github.com/Dao-AILab/flash-attention/releases/tag/v2.7.4.post1. We will refer to the downloaded file path as `path/to/flash_attn-xxx.whl`.
+1.  **Environment**: You can use the `cogflow_rl` environment.
+2.  **Configuration**: Modify the parameters in `run_all.sh`, including `TOKENIZER_PATH`, `RM_PATH`, and `MODEL_NAME`.
+3.  **Run Evaluation**:
+    ```bash
+    cd test
+    bash run_all.sh
+    ```
 
-```bash
-cd veRL
-conda create -n cogflow_rl python=3.10
-conda activate cogflow_rl
-pip install transformers==4.54.0 accelerate==1.9.0 torch==2.6.0 deepspeed==0.17.2
-pip install path/to/flash_attn-xxx.whl
-pip install torchdata==0.11.0
-pip install vllm==0.8.3
-pip install -e .
-pip install ray==2.43.0
-pip install tensorboard==2.20.0
-```
+### Attention Flow Visualization
 
-### Data
+Reproduce the Sankey diagram attention visualizations from our paper. The code is in `attention_visualizer`.
 
-#### Quick Prepare
+1.  **Calculate Attention**:
+    -   Configure `config_cog.json` with your model path and the example input/output you wish to analyze.
+    -   Run the calculation script:
+        ```bash
+        cd attention_visualizer
+        python attention_calculater.py --config config_cog.json
+        ```
+2.  **Generate Visualization Data**: Process the saved attention weights to create the visualization file.
+    ```bash
+    python attention_visualizer.py --agg_method topk_topk_mean --agg_inner_top_k 10 --agg_top_k 10 --norm_method none --viz_norm_method power --viz_power 0.2 --run_folder attention_map_cog attention_data.npz
+    ```
+3.  **View and Edit**: Open `sankey_visualizer.html` in a web browser. Load the generated `attention_sankey_*.json` file to view, interactively edit, and export the Sankey diagram as an SVG.
 
-1. Download the full training set into `dataset/train.json` (see the README of this repository for details)
-2. run the preprocessing scripts. Note: if you generate the dataset by yourself, you should set `start_num` and `end_num` based on your planning of the dataset. We recommend you use completely different data points for SFT and RL.
-```bash
-cd veRL/cogflow_utils
-bash prepare_all_data.sh
-```
+## 🎓 Citation
 
-#### Detailed Explaination
+If you use CogFlow in your research, please cite our paper:
 
-Before training, the raw data must be preprocessed. The raw data is expected to be in `veRL/cogflow_utils/data_cogflow/rl_cog_graph_v12_2_train` (for training) and `veRL/cogflow_utils/data_cogflow/rl_cog_graph_v12_2_eval` (for validation). The `dataset_all_prepare.py` will do this automatically. 
-
-Different preprocessing scripts are required for different models:
-
-- For CogFlow and Distilled-R1:
-  - Run: `veRL/cogflow_utils/data_preprocess_CogFlow.py`
-  - This script will generate preprocessed data at the following locations:
-    - Training set: `veRL/cogflow_utils/data_cogflow/cogflow_train.parquet`
-    - Validation set: `veRL/cogflow_utils/data_cogflow/cogflow_test.parquet`
-- For Direct-GRPO:
-  - Run: `veRL/cogflow_utils/data_preprocess_CogFlow_noreason.py`
-  - This script will generate preprocessed data at the following locations:
-    - Training set: `veRL/cogflow_utils/data_cogflow/direct_train.parquet`
-    - Validation set: `veRL/cogflow_utils/data_cogflow/direct_test.parquet`
-
-The structure of one pre-processed data instance is as follows:
-```python
-{
-    "data_source": data_source,
-    "prompt": [
-        {
-            "role": "system", 
-            "content": "You are a helpful assistant. You will always think before answer. Your thought should be wrapped in <think> and </think>. " 
-        }, 
-        {
-            "role": "user",
-            "content": question,
-        }
-    ],
-    "ability": "cog",
-    "reward_model": {
-        "style": "rule",
-        "ground_truth": rm_instruction
-    },
-    "extra_info": {
-        'split': split,
-        'index': idx, 
-        'reference': {
-            'responses': [reference_responses], 
-            'len_reason_short': min(curr_think_len),
-            'len_reason_long': max(curr_think_len),
-            'epoch': 0,
-        },
-        'user_input': question,
-        'answer': 'no_answer',
-    }
+```bibtex
+@misc{cogflow,
+      title={Think Socially via Cognitive Reasoning}, 
+      author={Jinfeng Zhou and Zheyu Chen and Shuai Wang and Quanyu Dai and Zhenhua Dong and Hongning Wang and Minlie Huang},
+      year={2025},
+      eprint={2509.22546},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2509.22546}, 
 }
 ```
 
-### Training
+## 🙏 Acknowledgements
 
-#### Quick Start
-
-We take the full version (CogFlow) as an example. The Distilled-R1 and Direct-GRPO are similar, using scripts with suffixs `_direct` or  `_distillr1` instead of `_full`, respectively. 
-
-- Step 1: configure the `TMPDIR`, `MODEL_PATH`, and `REWARD_MODEL_PATH` repectively at `veRL/cogflow_utils/llama31_8b_rm_cogflow.sh`. `TMPDIR` is the temporary directory for storing the training data and model checkpoints. `MODEL_PATH` is the path to the SFT model. `REWARD_MODEL_PATH` is the path to the preference reward model. 
-
-- Step 2: configure the `TOKENIZER_MODEL` at `veRL/cogflow_utils/custom_reward_full.py`. `TOKENIZER_MODEL` is the path to the tokenizer of the SFT model. 
-
-- Step 3: run the command:
-```bash
-cd veRL/cogflow_utils
-bash llama31_8b_rm_cogflow_full.sh
-```
-Now the checkpoints are stored in `veRL/cogflow_utils/checkpoints/verl_grpo_cog_flow/llama31_8b_rm_cogflow`
-
-- Step 4: set the path to SFT model in `converter_full.sh`, choose the target checkpoint `xxx`, and run it to convert the RL trained model (using tools provided by veRL): 
-```bash
-bash converter_full.sh
-```
-Now the model is stored in `veRL/cogflow_utils/checkpoints/verl_grpo_cog_flow/llama31_8b_rm_cogflow/global_step_xxx/model`
-
-#### Hyperparameters Explaination
-
-For hyperparameters that control the reward function, please modify the list `omega` in `veRL/cogflow_utils/custom_reward_full.py`. 
-
-Control which data_source(s) use custom_reward: 
-- First, set: `SRC_USE_CUSTOM_REWARD="[cog_flow]"`
-- Then, add:  `+reward_model.src_use_custom_reward=$SRC_USE_CUSTOM_REWARD`
-
-For reward model: 
-
-* using AutoModelForTokenClassification as Reward Model:
-  - `reward_model.enable=True`
-  - `reward_model.reward_manager=naive2` 
-  - `reward_model.strategy=fsdp_3`
-  - `custom_reward_function.path=...`
-  - `custom_reward_function.name=compute_score`
-
-For Rollout method：
-
-* Using the modified default method: 
-  - `actor_rollout_ref.actor.strategy=fsdp_3`
-  - `critic.strategy=fsdp_3`
-
-## Analysis
-
-### Automatic Test
-The code for automatic test is in `test`, including two parts: (1) rollout (2) run evaluator. 
-
-#### Environment Installation
-
-You can simply use the `cogflow_rl` environment (See `veRL/README.md` in this respository) to run the rollout (install the `zhipuai` package if you want to use the Zhipu API), or the following simplified environment: 
-
-```bash
-cd test
-conda create -n cogflow_test python=3.10
-conda activate cogflow_test
-pip install transformers==4.54.0 torch==2.6.0
-pip install vllm==0.8.3
-pip install zhipuai==2.1.5.20241204
-pip install google-genai==1.34.0 # for google token counting, not necessary
-pip install openai==1.109.1
-```
-
-#### Run Evaluator
-
-1. Configure the api (Optional) : `prompt_utils/api_config.py`
-2. Configure the tokenizer (Optional) : `config_tokenizer.py`, fill the tokenizer path of the model you want to use (not necessary, it will only be used when analyze the length of the output)
-3. Configure the script: change the parameters in  `run_all.sh`. You SHOULD modify the `TOKENIZER_PATH`, `RM_PATH`, `MODEL_NAME`, `MODEL_BRIEF_NAME` based on your needs.
-4. Run the script: `bash run_all.sh`. 
-
-### Attention Flow Visualization
-In our paper, we visualized the attention flow between the parts of the cognitive flow. We provided the pipeline to generate the attention flow visualization, see `attention_visualizer`. 
-
-This module is used to visualize the attention weights of the CogFlow model.
-
-#### Environment Installation
-
-You can use the same environment `cogflow_test` modules.
-
-#### Part 1: Attention Calculation
-
-First, We calculate the token-token attention weights of the CogFlow model on some given example and store them in one `.npz` file. 
-
-1. configure the `config_cog.json`. The `user_input` and `generated_response` in it is the example displayed in the paper(https://arxiv.org/abs/2509.22546). You can change them based on your need. The `model_name` and `tokenizer_name` should be the same as the model you want to use. 
-
-2. run the following command to calculate the attention weights and store them in `some_output_directory/attention.npz` file.
-
-```shell
-conda activate cogflow_test
-cd attention_visualizer
-python attention_calculater.py --config config_cog.json
-```
-
-#### Part 2: Attention Visualization
-
-Then, we visualize the attention weights based on the `attention.npz` file. 
-
-```bash
-python attention_visualizer.py --agg_method topk_topk_mean --agg_inner_top_k 10 --agg_top_k 10 --norm_method none --viz_norm_method power --viz_power 0.2  --run_folder attention_map_cog attention_data.npz
-```
-
-#### Part 3: Visualization Modification and Export
-
-We developed a lightweight web application to interactively modify and export the visualization.
-1. Open the Web Application: Simply open the `sankey_visualizer.html` file in your web browser (e.g., Google Chrome, Firefox).
-2. Load Data: Click on the `Select Data File` button and choose one of the `attention_sankey_*.json` files generated in the previous step. The Sankey diagram will be rendered on the screen.
-3. Edit the Visualization: You can customize the appearance of the diagram in several ways:
-  - Global Chart Settings: Use the sliders and dropdowns in the `Chart Settings` panel to adjust properties like side margins, font size, and font family for the entire diagram. You can also swap the left and right columns or toggle the visibility of labels.
-  - Edit Link Styles: Click on any link (the flow paths between nodes). An `Edit Link Style` panel will appear on the right. Here, you can change the link's color, opacity, width, and add a colored border.
-  - Edit Node Labels: Click directly on any node's text label. An input box will appear, allowing you to rename the node. Press Enter to confirm or Escape to cancel.
-4. Export Your Work: Once you are satisfied with your edits, you can export the result:
-  - Export JSON: Click this button to save all your style and label changes into a new .json file. This file can be loaded back into the editor later.
-  - Export SVG: Click this button to save the current view of the diagram as a high-quality, scalable SVG image file, which is ideal for publications and presentations.
+Our SFT and RL implementations are built upon the excellent [LLaMA-Factory](https://github.com/hiyouga/LLaMA-Factory) and [veRL](https://github.com/volcengine/verl) frameworks. We thank their developers for making their work public.

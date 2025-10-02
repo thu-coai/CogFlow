@@ -305,7 +305,7 @@ def output_dataset(all_data: list, tar_folder: str, dataset_name: str, info_file
     columns = {"prompt": "instruction", "label": "label"}
     config[dataset_name] = {"file_name": relative_file_path.replace('\\', '/'), "columns": columns}
     with open(info_file_path, "w") as f:
-        json.dump(config, f, indent=4)
+        json.dump(config, f, indent=4, ensure_ascii=False)
     for data in all_data:
         data.pop('addition')
     with open(full_file_path, "w") as f:

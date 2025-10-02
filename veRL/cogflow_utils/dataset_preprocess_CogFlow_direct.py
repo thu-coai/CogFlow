@@ -1,34 +1,18 @@
-# Copyright 2024 Bytedance Ltd. and/or its affiliates
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 """
-Preprocess the CogGraph dataset to parquet format
+Preprocess the CogFlow dataset to parquet format
 """
 
 import re
 import os
-# os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
+os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
 
 from datasets import load_dataset, DatasetDict
 from transformers import AutoTokenizer
-from verl.utils.hdfs_io import copy, makedirs
 import argparse
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--local_dir', default='./data_cogflow/')
-    parser.add_argument('--hdfs_dir', default=None)
     parser.add_argument('--tokenizer', type=str)
 
     args = parser.parse_args()
@@ -115,15 +99,9 @@ if __name__ == '__main__':
     test_dataset = test_dataset.map(function=make_map_fn('test'), with_indices=True)
 
     local_dir = args.local_dir
-    hdfs_dir = args.hdfs_dir
 
     train_dataset.to_parquet(os.path.join(local_dir, 'direct_train.parquet'))
     test_dataset.to_parquet(os.path.join(local_dir, 'direct_test.parquet'))
-
-    if hdfs_dir is not None:
-        makedirs(hdfs_dir)
-
-        copy(src=local_dir, dst=hdfs_dir)
         
     print(data_src_cnt)
     print('think:', sum(think_len) / len(think_len))

@@ -4,6 +4,7 @@ QUICK_MODEL=ds-v3
 MAIN_REFERENCE_MODEL=ds-r1 # will be used for generating the main reference, which is the baseline for determining whther the response is good. 
 OTHER_REFERENCE_MODELS=ds-v3,gpt-4o # other references, will be ignored in the dataset by default
 RUN_INSTANCES=2 # the number of social situation generated. 
+SFT_RL_TEST_RATIO=2:6:1 # the ratio of SFT : RL(train+eval) : test
 
 python run_all.py \
 	--platform $API_PLATFORM \
@@ -18,4 +19,5 @@ python collect_and_convert_to_dataset.py \
 	--input_folders result/CogFlow_${MAIN_REFERENCE_MODEL}_6_added \
 	--output_folder ../dataset \
 	--reference_api $MAIN_REFERENCE_MODEL \
-	--skip_apis $OTHER_REFERENCE_MODELS
+	--skip_apis $OTHER_REFERENCE_MODELS \
+	--sft_rl_test_ratio $SFT_RL_TEST_RATIO
