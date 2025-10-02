@@ -35,6 +35,7 @@ CogFlow enables models to navigate complex social situations by generating a str
 
 ## 🚀 Getting Started
 
+Please first clone the repository.
 ```
 git clone https://github.com/thu-coai/CogFlow
 cd CogFlow
