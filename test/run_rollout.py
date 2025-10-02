@@ -60,8 +60,8 @@ def parse_arguments() -> argparse.Namespace:
 
     # --- vLLM Local Generation Parameters ---
     vllm_group = parser.add_argument_group('vLLM Local Generation Parameters')
-    vllm_group.add_argument("--model_name", type=str, default="/home/zhoujinfeng/VERL_MODEL/cogreasoning/0614_sft_cog_data_v6_3_checkpoint_916/0614_sft_cog_data_v6_3_checkpoint_916", help="Path to the local model.")
-    vllm_group.add_argument("--tokenizer_name", type=str, default="/home/zhoujinfeng/VERL_MODEL/cogreasoning/0614_sft_cog_data_v6_3_checkpoint_916/0614_sft_cog_data_v6_3_checkpoint_916", help="Path to the local tokenizer.")
+    vllm_group.add_argument("--model_name", type=str, default="", help="Path to the local model.")
+    vllm_group.add_argument("--tokenizer_name", type=str, default="", help="Path to the local tokenizer.")
     vllm_group.add_argument("--temperature", type=float, default=1)
     vllm_group.add_argument("--top_p", type=float, default=0.9)
     vllm_group.add_argument("--top_k", type=int, default=50)
@@ -72,8 +72,8 @@ def parse_arguments() -> argparse.Namespace:
 
     # --- API Generation Parameters ---
     api_group = parser.add_argument_group('API Generation Parameters')
-    api_group.add_argument("--api_model", type=str, default="qwen3_32B", help="Name of the API model to call.")
-    api_group.add_argument("--api_platform", type=str, default="silicon_flow", help="Name of the API platform to call.")
+    api_group.add_argument("--api_model", type=str, default="ds-v3", help="Name of the API model to call.")
+    api_group.add_argument("--api_platform", type=str, default="custom", help="Name of the API platform to call.")
     api_group.add_argument("--check_generate_time", type=str, default="no", choices=["yes", "no"], help="Whether to check API generation time.")
     api_group.add_argument("--num_api_workers", type=int, default=32, help="Number of concurrent processes to start when using API mode.")
 

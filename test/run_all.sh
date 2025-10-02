@@ -1,5 +1,4 @@
 data_path="../dataset/test.json" # full test dataset
-TOKENIZER_PATH="path/to/tokenizer"
 GPU_DEVICES=1,2,3,5
 NUM_ROLLOUTS=1
 
@@ -13,6 +12,7 @@ RM_PATH="path/to/reward/model"
 
 MODEL_NAME="/path/to/model"
 MODEL_BRIEF_NAME=YourCustomizedNameExample:llama_sft_cogflow
+TOKENIZER_PATH="path/to/tokenizer"
 
 echo "--> Running VLLM inference..."
 echo "    Model Path: $MODEL_NAME"
@@ -45,7 +45,6 @@ python run_rollout.py \
 	--model_name "$MODEL_NAME" \
 	--model_brief_name "$MODEL_BRIEF_NAME" \
 	--data_path "$data_path" \
-	--tokenizer_name "$TOKENIZER_PATH" \
 	--result_folder "$LLM_RESULT_FOLDER" \
 	--tp_per_instance 2 \
 	--batch_size 128 \
