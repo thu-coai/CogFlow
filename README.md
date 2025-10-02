@@ -165,8 +165,8 @@ RL optimizes the SFT model's ability to generate high-quality and efficient cogn
     cd veRL/cogflow_utils
     bash prepare_all_data.sh
     ```
-- **Configure Training Script**: In `veRL/cogflow_utils/rl_cogflow_full.sh`, set the paths for `TMPDIR`, `MODEL_PATH` (your SFT model), `REWARD_MODEL_PATH`, and the `MODEL_BRIEF_NAME`(nick name used in log and checkpoints' file names). Also, set `TOKENIZER_MODEL` in `veRL/cogflow_utils/custom_reward_full.py` (the tokenizer of your SFT model). 
-    - Scripts with suffixs `_direct` or `_distillr1` is used to training the ablations `Direct-GRPO` and `Distilled-R1`.
+- **Configure Training Script**: In `veRL/cogflow_utils/rl_cogflow_full.sh`, set the paths for `TMPDIR`, `MODEL_PATH` (your SFT model), `REWARD_MODEL_PATH`, and the `MODEL_BRIEF_NAME`(nickname used in log and checkpoints' file names). Also, set `TOKENIZER_MODEL` in `veRL/cogflow_utils/custom_reward_full.py` (the tokenizer of your SFT model). 
+    - Scripts with suffixes `_direct` or `_distillr1` are used to train the baselines `Direct-GRPO` and `Distilled-R1`.
 
 - **Run RL Training**, Checkpoints will be saved in the `checkpoints` directory.:
     ```bash
