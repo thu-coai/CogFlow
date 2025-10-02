@@ -128,7 +128,10 @@ This step teaches the base model the fundamental capability of cognitive reasoni
 - **Run SFT Training**: Execute the training command:
     ```bash
     cd Llama-Factory
+    # for Qwen-2.5-7B-Instruct base model
     llamafactory-cli train CogFlow_files/qwen2.5-7b_full_sft_cogflow.yaml
+    # for Llama-3.1-8B-Instruct base model
+    llamafactory-cli train CogFlow_files/llama3.1-8b_full_sft_cogflow.yaml
     ```
 
 ### Step 2: Train Comparative Preference Reward Model
@@ -136,12 +139,12 @@ This step teaches the base model the fundamental capability of cognitive reasoni
 The reward model learns to predict human preferences, guiding the RL process.
 
 - **Prepare Training Data**: You can prepare it in two ways: 
-    - Download Our Dataset (Recommended): downloading our preprocessed reward model data from [Huggingface](https://huggingface.co/datasets/thu-coai/CogFlow) and place it in the `dataset` folder, with names `rm_train.json`, `rm_eval.json`, and `rm_test.json`. Then, run the following script to register the dataset to `Llama-Factory/data`.
+    - **Download Our Dataset (Recommended)**: Download our preprocessed reward model data from [Huggingface](https://huggingface.co/datasets/thu-coai/CogFlow) and place it in the `dataset` folder, with names `rm_train.json`, `rm_eval.json`, and `rm_test.json`. Then, run the following script to register the dataset to `Llama-Factory/data`.
         ```bash
         cd Llama-Factory/CogFlow_files
         bash prepare_data_rm_offtheshelf.sh
         ```
-    - Generate Reward Model Data: Construct reward model data from the `dataset/train.json`. Before running, please configure the API key in `Llama-Factory/CogFlow_files/prompt_utils/api_config.py` (the same procedure in [Step 2](#step-2-prepare-api-keys)). Then, run the following script to register the dataset to `Llama-Factory/data`.: 
+    - **Generate Reward Model Data**: Construct reward model data from the `dataset/train.json`. Before running, please configure the API key in `Llama-Factory/CogFlow_files/prompt_utils/api_config.py` (the same procedure in [Step 2](#step-2-prepare-api-keys)). Then, run the following script to register the dataset to `Llama-Factory/data`.: 
         ```bash
         cd Llama-Factory/CogFlow_files
         bash prepare_data_rm.sh
@@ -162,7 +165,7 @@ RL optimizes the SFT model's ability to generate high-quality and efficient cogn
     cd veRL/cogflow_utils
     bash prepare_all_data.sh
     ```
-- **Configure Training Script**: In `veRL/cogflow_utils/llama31_8b_rm_cogflow_full.sh`, set the paths for `TMPDIR`, `MODEL_PATH` (your SFT model), and `REWARD_MODEL_PATH`. Also, set `TOKENIZER_MODEL` in `veRL/cogflow_utils/custom_reward_full.py` (the tokenizer of your SFT model). 
+- **Configure Training Script**: In `veRL/cogflow_utils/rl_cogflow_full.sh`, set the paths for `TMPDIR`, `MODEL_PATH` (your SFT model), and `REWARD_MODEL_PATH`. Also, set `TOKENIZER_MODEL` in `veRL/cogflow_utils/custom_reward_full.py` (the tokenizer of your SFT model). 
     - Scripts with suffixs `_direct` or `_distillr1` is used to training the ablations `Direct-GRPO` and `Distilled-R1`.
 
 - **Run RL Training**, Checkpoints will be saved in the `checkpoints` directory.:
