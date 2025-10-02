@@ -9,7 +9,7 @@ CogFlow enables models to navigate complex social situations by generating a str
 <div align="center">
   <figure>
     <img src="figure/cognitive_flow_training_framwork.png" alt="CogFlow Framework" height="400">
-    <figcaption><b>Figure:</b> The CogFlow framework, from data collection via simulation to model optimization with SFT and RL.</figcaption>
+    <figcaption>Figure: The CogFlow framework, from data collection via simulation to model optimization with SFT and RL.</figcaption>
   </figure>
 </div>
 
