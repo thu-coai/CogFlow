@@ -298,12 +298,23 @@ def export_sankey_data_for_web(node_info_list, all_edges, highlighted_edges, arg
         "Observation": "<Observation>",
         "Observation_content": "Content_obser.",
         "/Observation": "</Observation>",
+        
         "Regulation": "<Regulation>",
         "Regulation_content": "Content_regu.",
         "/Regulation": "</Regulation>",
+        
         "Attribution": "<Attribution>",
         "Attribution_content": "Content_attr.",
         "/Attribution": "</Attribution>",
+        
+        "Motivation": "<Motivation>",
+        "Motivation_content": "Content_motiv.",
+        "/Motivation": "</Motivation>",
+        
+        "Efficacy": "<Efficacy>",
+        "Efficacy_content": "Content_eff.",
+        "/Efficacy": "</Efficacy>",
+        
         "final-text": "Response",
     }
 
