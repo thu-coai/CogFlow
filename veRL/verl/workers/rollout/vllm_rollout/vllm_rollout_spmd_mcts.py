@@ -413,7 +413,7 @@ class vLLMRolloutMCTS(vLLMRollout):
             import os
             text = [self.inference_engine.get_tokenizer().decode(path, skip_special_tokens=False) for path in paths]
             input_text = self.inference_engine.get_tokenizer().decode(all_raw_prompt_ids[idx], skip_special_tokens=False)
-            output_file = f"/data/chenzheyu/CogGraph/VERL/tmp_output/mcts_response_{idx}_{datetime.now().strftime('%Y%m%d%H%M%S')}_{uuid.uuid4()}.json"
+            output_file = f"./tmp_output/mcts_response_{idx}_{datetime.now().strftime('%Y%m%d%H%M%S')}_{uuid.uuid4()}.json"
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
             with open(output_file, "w") as f:
                 json.dump({
