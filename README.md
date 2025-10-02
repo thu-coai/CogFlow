@@ -6,7 +6,10 @@ This repository contains the official implementation for the paper **"Think Soci
 
 CogFlow enables models to navigate complex social situations by generating a structured "cognitive flow" of interconnected cognitive units (e.g., *observation*, *attribution*). This approach moves beyond rigid logical deduction, which is often ill-suited for the ambiguous and interpretive nature of social interactions.
 
-![CogFlow Framework Overview](figure/cognitive_flow_training_framwork.pdf)
+<p align="center">
+    <img src="figure/cognitive_flow_training_framwork.pdf" height=400/>
+<p>
+
 > **Figure:** The CogFlow framework, from data collection via simulation to model optimization with SFT and RL.
 
 ## 📜 Table of Contents
